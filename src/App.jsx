@@ -1,401 +1,577 @@
-import { useState, useMemo } from 'react'
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from 'recharts'
+import React, { useState } from 'react';
+import Login from './Login';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState('Supervisor de Terreno');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filterStatus, setFilterStatus] = useState('Todos');
+  const [filterComuna, setFilterComuna] = useState('Todas');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Modales de Detalle Técnico y Visor PDF
+  const [obraDetalle, setObraDetalle] = useState(null);
+  const [obraPDF, setObraPDF] = useState(null);
+
+  // Lista de Obras con Comuna, Equipos y Bitácora
   const [obras, setObras] = useState([
     {
-      id: 'OB-101',
-      cliente: 'Agrícola San Pedro',
+      id: 'OBR-2026-01',
+      cliente: 'Agrícola San Carlos SpA',
+      comuna: 'San Carlos',
       servicio: 'Climatización',
-      tecnico: 'Carlos Muñoz',
-      presupuesto: 1450000,
+      monto: 3300000,
       estado: 'En proceso',
+      equipos: ['Central Frigorífica 30 HP', 'Evaporador Bitzer', 'Tablero Control PLC'],
+      bitacora: 'Montaje de tuberías de refrigerante completado al 80%. Pruebas de presión programadas.'
     },
     {
-      id: 'OB-102',
-      cliente: 'Viña Montes',
+      id: 'OBR-2026-02',
+      cliente: 'Frutícola Chillán',
+      comuna: 'Chillán',
       servicio: 'Mantención',
-      tecnico: 'Rodrigo Araya',
-      presupuesto: 820000,
+      monto: 720000,
       estado: 'Finalizada',
+      equipos: ['Cámara de Conservación #2', 'Compresor Reciprocante R-404A'],
+      bitacora: 'Limpieza de condensadores y recarga de aceite sintético. Parámetros operativos OK.'
     },
     {
-      id: 'OB-103',
-      cliente: 'Packing Frutícola Sur',
+      id: 'OBR-2026-03',
+      cliente: 'Packing Coihueco',
+      comuna: 'Coihueco',
       servicio: 'Emergencia',
-      tecnico: 'Sin asignar',
-      presupuesto: 2100000,
+      monto: 2250000,
       estado: 'Suspendida',
+      equipos: ['Chiller 50 TR', 'Bomba de Glicol Primary'],
+      bitacora: 'Fuga detectada en serpentín principal. Esperando repuesto importado desde Santiago.'
     },
     {
-      id: 'OB-104',
-      cliente: 'Centro Distribución Ñuble',
-      servicio: 'Proyecto eléctrico',
-      tecnico: 'Esteban Morales',
-      presupuesto: 3500000,
+      id: 'OBR-2026-04',
+      cliente: 'Congelados Bulnes',
+      comuna: 'Bulnes',
+      servicio: 'Proyecto Eléctrico',
+      monto: 3500000,
       estado: 'En proceso',
+      equipos: ['Gabinete Fuerza y Control 380V', 'Variadores de Frecuencia Danfoss'],
+      bitacora: 'Cableado de fuerza finalizado. Pendiente programación de sensores de temperatura.'
     },
-    {
-      id: 'OB-105',
-      cliente: 'Viña Concha y Toro',
-      servicio: 'Climatización',
-      tecnico: 'Carlos Muñoz',
-      presupuesto: 1900000,
-      estado: 'En proceso',
-    },
-  ])
+  ]);
 
-  // Filtros
-  const [busqueda, setBusqueda] = useState('')
-  const [filtroEstado, setFiltroEstado] = useState('Todos')
-
-  // Modal
-  const [modalAbierto, setModalAbierto] = useState(false)
-  const [formulario, setFormulario] = useState({
+  // Formulario para Nueva Obra
+  const [nuevaObra, setNuevaObra] = useState({
     cliente: '',
+    comuna: 'Chillán',
     servicio: 'Climatización',
-    tecnico: '',
-    presupuesto: '',
-  })
+    monto: '',
+    estado: 'En proceso',
+    equipos: '',
+    bitacora: ''
+  });
 
-  const serviciosFYAG = [
-    'Proyecto',
-    'Mantención',
-    'Climatización',
-    'Proyecto eléctrico',
-    'Emergencia',
-    'Garantía',
-    'Venta de repuestos',
-    'Mejoras',
-  ]
-
-  const handleCrearObra = (e) => {
-    e.preventDefault()
-    if (!formulario.cliente.trim() || !formulario.presupuesto) return
-
-    const nuevoId = `OB-${101 + obras.length}`
-    const nuevaObra = {
-      id: nuevoId,
-      cliente: formulario.cliente,
-      servicio: formulario.servicio,
-      tecnico: formulario.tecnico.trim() ? formulario.tecnico : 'Sin asignar',
-      presupuesto: Number(formulario.presupuesto),
-      estado: 'En proceso',
-    }
-
-    setObras([nuevaObra, ...obras])
-    setFormulario({ cliente: '', servicio: 'Climatización', tecnico: '', presupuesto: '' })
-    setModalAbierto(false)
+  if (!isLoggedIn) {
+    return (
+      <Login
+        onLogin={(selectedRole) => {
+          setIsLoggedIn(true);
+          setUserRole(selectedRole);
+        }}
+      />
+    );
   }
 
-  // Filtrado de la tabla
-  const obrasFiltradas = useMemo(() => {
-    return obras.filter((obra) => {
-      const coincideTexto =
-        obra.cliente.toLowerCase().includes(busqueda.toLowerCase()) ||
-        obra.id.toLowerCase().includes(busqueda.toLowerCase()) ||
-        obra.tecnico.toLowerCase().includes(busqueda.toLowerCase())
-      const coincideEstado = filtroEstado === 'Todos' || obra.estado === filtroEstado
-      return coincideTexto && coincideEstado
-    })
-  }, [obras, busqueda, filtroEstado])
+  // Permisos por Rol
+  const esGerencia = userRole === 'Gerencia General';
+  const esFinanzas = userRole === 'Finanzas / Administración' || esGerencia;
+  const esTerreno = userRole === 'Supervisor de Terreno' || esGerencia;
 
-  // Procesamiento de datos para el gráfico de barras gerencial
-  const datosGrafico = useMemo(() => {
-    const mapa = {}
-    obras.forEach((o) => {
-      if (!mapa[o.servicio]) {
-        mapa[o.servicio] = 0
-      }
-      mapa[o.servicio] += o.presupuesto
-    })
+  // KPIs
+  const enTerrenoCount = obras.filter((o) => o.estado === 'En proceso').length;
+  const finalizadasCount = obras.filter((o) => o.estado === 'Finalizada').length;
+  const suspendidasCount = obras.filter((o) => o.estado === 'Suspendida').length;
+  const totalMonto = obras.reduce((acc, curr) => acc + curr.monto, 0);
 
-    return Object.keys(mapa).map((servicio) => ({
-      servicio,
-      monto: mapa[servicio],
-    }))
-  }, [obras])
+  const formatCLP = (val) => `$${val.toLocaleString('es-CL')}`;
 
-  const transiciones = {
-    'En proceso': 'Finalizada',
-    'Finalizada': 'Suspendida',
-    'Suspendida': 'Cancelada',
-    'Cancelada': 'En proceso',
-  }
+  const chartData = [
+    { servicio: 'Climatización', monto: obras.filter((o) => o.servicio === 'Climatización').reduce((a, b) => a + b.monto, 0) },
+    { servicio: 'Mantención', monto: obras.filter((o) => o.servicio === 'Mantención').reduce((a, b) => a + b.monto, 0) },
+    { servicio: 'Emergencia', monto: obras.filter((o) => o.servicio === 'Emergencia').reduce((a, b) => a + b.monto, 0) },
+    { servicio: 'Proyecto Eléctrico', monto: obras.filter((o) => o.servicio === 'Proyecto Eléctrico').reduce((a, b) => a + b.monto, 0) },
+  ];
 
-  const cambiarEstado = (id) => {
-    setObras(obras.map((o) => (o.id === id ? { ...o, estado: transiciones[o.estado] } : o)))
-  }
+  const handleGuardarObra = (e) => {
+    e.preventDefault();
+    if (!nuevaObra.cliente || !nuevaObra.monto) return;
 
-  const getBadgeStyle = (estado) => {
-    switch (estado) {
-      case 'Finalizada': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-      case 'En proceso': return 'bg-sky-500/10 text-sky-400 border-sky-500/20'
-      case 'Suspendida': return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-      case 'Cancelada': return 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-      default: return 'bg-slate-700 text-slate-300 border-slate-600'
-    }
-  }
+    const item = {
+      id: `OBR-2026-0${obras.length + 1}`,
+      cliente: nuevaObra.cliente,
+      comuna: nuevaObra.comuna,
+      servicio: nuevaObra.servicio,
+      monto: parseInt(nuevaObra.monto, 10),
+      estado: nuevaObra.estado,
+      equipos: nuevaObra.equipos ? nuevaObra.equipos.split(',').map(s => s.trim()) : ['Equipos por definir'],
+      bitacora: nuevaObra.bitacora || 'Obra ingresada al sistema. Pendiente primera inspección.'
+    };
+
+    setObras([item, ...obras]);
+    setNuevaObra({ cliente: '', comuna: 'Chillán', servicio: 'Climatización', monto: '', estado: 'En proceso', equipos: '', bitacora: '' });
+    setIsModalOpen(false);
+  };
+
+  const obrasFiltradas = obras.filter((o) => {
+    const matchStatus = filterStatus === 'Todos' || o.estado === filterStatus;
+    const matchComuna = filterComuna === 'Todas' || o.comuna === filterComuna;
+    const matchSearch =
+      o.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      o.id.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchStatus && matchComuna && matchSearch;
+  });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 font-sans">
-      <div className="max-w-6xl mx-auto space-y-8">
-        
-        {/* Encabezado */}
-        <header className="border-b border-slate-800 pb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 font-sans">
+      {/* Header */}
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-slate-800">
+        <div className="flex items-center gap-3">
+          <span className="bg-sky-500 text-slate-950 font-bold px-2.5 py-1 rounded text-sm tracking-wider">
+            FYAG
+          </span>
           <div>
-            <div className="flex items-center gap-3">
-              <span className="bg-sky-600 text-white font-black text-sm px-2.5 py-1 rounded">FYAG</span>
-              <h1 className="text-2xl font-bold text-white tracking-tight">Frío y Agroindustria SpA</h1>
-            </div>
-            <p className="text-sm text-slate-400 mt-1">
-              Sistema Centralizado de Gestión de Obras y Presupuestos — Proyecto 2 [Beta]
+            <h1 className="text-xl font-bold text-white tracking-tight">Frío y Agroindustria SpA</h1>
+            <p className="text-xs text-slate-400">
+              Gestión de Obras y Presupuestos — Rol: <strong className="text-sky-400">{userRole}</strong>
             </p>
           </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {esTerreno && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-lg shadow-sky-500/20 cursor-pointer"
+            >
+              <span className="text-base font-bold">+</span> Nueva Obra
+            </button>
+          )}
+
+          <div className="h-6 w-px bg-slate-800"></div>
 
           <button
-            onClick={() => setModalAbierto(true)}
-            className="self-start md:self-auto bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm px-4 py-2.5 rounded-lg shadow transition flex items-center gap-2"
+            onClick={() => setIsLoggedIn(false)}
+            className="px-3 py-1.5 bg-slate-900 hover:bg-red-950/50 hover:text-red-400 text-slate-400 border border-slate-800 rounded-lg text-xs font-medium transition-colors cursor-pointer"
           >
-            <span className="text-lg leading-none">+</span> Nueva Obra
+            Cerrar Sesión
           </button>
-        </header>
+        </div>
+      </header>
 
-        {/* KPIs */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800 shadow-sm">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Obras en Terreno</p>
-            <p className="text-3xl font-extrabold text-white mt-1">
-              {obras.filter((o) => o.estado === 'En proceso').length}
-            </p>
-            <span className="text-xs text-sky-400 font-medium mt-2 inline-block">● Activas</span>
+      {/* Tarjetas KPI */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Obras en Terreno</span>
+          <p className="text-3xl font-extrabold text-white mt-2">{enTerrenoCount}</p>
+          <span className="text-xs text-sky-400 mt-2 block">Activas en plantas</span>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Obras Finalizadas</span>
+          <p className="text-3xl font-extrabold text-white mt-2">{finalizadasCount}</p>
+          <span className="text-xs text-emerald-400 mt-2 block">Listas para facturar</span>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Suspendidas / Alerta</span>
+          <p className="text-3xl font-extrabold text-amber-400 mt-2">{suspendidasCount}</p>
+          <span className="text-xs text-amber-400/80 mt-2 block">Revisar observaciones</span>
+        </div>
+
+        {esFinanzas ? (
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Monto Total Cartera</span>
+            <p className="text-3xl font-extrabold text-white mt-2">{formatCLP(totalMonto)}</p>
+            <span className="text-xs text-slate-400 mt-2 block">Proyectos registrados</span>
           </div>
-
-          <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800 shadow-sm">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Obras Finalizadas</p>
-            <p className="text-3xl font-extrabold text-white mt-1">
-              {obras.filter((o) => o.estado === 'Finalizada').length}
-            </p>
-            <span className="text-xs text-emerald-400 font-medium mt-2 inline-block">Listas para facturar</span>
+        ) : (
+          <div className="bg-slate-900 border border-slate-800/50 rounded-xl p-5 opacity-60">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Monto Total Cartera</span>
+            <p className="text-sm font-medium text-slate-500 mt-3">[ Restringido a Finanzas ]</p>
           </div>
+        )}
+      </section>
 
-          <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800 shadow-sm">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Suspendidas / Alerta</p>
-            <p className="text-3xl font-extrabold text-amber-400 mt-1">
-              {obras.filter((o) => o.estado === 'Suspendida').length}
-            </p>
-            <span className="text-xs text-amber-400/80 font-medium mt-2 inline-block">Revisar causas</span>
-          </div>
-
-          <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800 shadow-sm">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Monto Total Cartera</p>
-            <p className="text-3xl font-extrabold text-white mt-1">
-              ${obras.reduce((acc, o) => acc + o.presupuesto, 0).toLocaleString('es-CL')}
-            </p>
-            <span className="text-xs text-slate-400 font-medium mt-2 inline-block">Proyectos registrados</span>
-          </div>
-        </section>
-
-        {/* Gráfico Gerencial de Recharts */}
-        <section className="bg-slate-900/80 p-6 rounded-xl border border-slate-800 shadow-sm">
+      {/* Gráfico Financiero */}
+      {esFinanzas && (
+        <section className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-8">
           <div className="mb-4">
             <h2 className="text-base font-bold text-white">Presupuesto Acumulado por Tipo de Servicio</h2>
             <p className="text-xs text-slate-400">Distribución de capital comprometido según categoría</p>
           </div>
-          
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={datosGrafico} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis 
-                  dataKey="servicio" 
-                  stroke="#94a3b8" 
-                  fontSize={12} 
-                  tickLine={false}
-                />
-                <YAxis 
-                  stroke="#94a3b8" 
-                  fontSize={12} 
+                <XAxis dataKey="servicio" stroke="#64748b" fontSize={12} tickLine={false} />
+                <YAxis
+                  stroke="#64748b"
+                  fontSize={12}
                   tickLine={false}
                   tickFormatter={(val) => `$${(val / 1000000).toFixed(1)}M`}
                 />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc' }}
-                  formatter={(value) => [`$${value.toLocaleString('es-CL')}`, 'Presupuesto']}
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#fff' }}
+                  formatter={(val) => [formatCLP(val), 'Presupuesto']}
                 />
                 <Bar dataKey="monto" fill="#0284c7" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </section>
+      )}
 
-        {/* Filtros */}
-        <section className="bg-slate-900/80 rounded-xl border border-slate-800 p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="w-full md:w-80">
+      {/* Tabla con Filtro por Ubicación/Comuna */}
+      <section className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
             <input
               type="text"
-              placeholder="Buscar por cliente, técnico o código..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition"
+              placeholder="Buscar cliente o código..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 w-full sm:w-60"
             />
+
+            {/* Filtro por Comuna (Región de Ñuble) */}
+            <select
+              value={filterComuna}
+              onChange={(e) => setFilterComuna(e.target.value)}
+              className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-sky-500"
+            >
+              <option value="Todas">Todas las Comunas (Ñuble)</option>
+              <option value="Chillán">Chillán</option>
+              <option value="San Carlos">San Carlos</option>
+              <option value="Coihueco">Coihueco</option>
+              <option value="Bulnes">Bulnes</option>
+            </select>
           </div>
 
-          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-            {['Todos', 'En proceso', 'Finalizada', 'Suspendida', 'Cancelada'].map((estado) => (
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+            {['Todos', 'En proceso', 'Finalizada', 'Suspendida'].map((st) => (
               <button
-                key={estado}
-                onClick={() => setFiltroEstado(estado)}
-                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap border ${
-                  filtroEstado === estado
-                    ? 'bg-sky-600 text-white border-sky-500'
-                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
+                key={st}
+                onClick={() => setFilterStatus(st)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+                  filterStatus === st
+                    ? 'bg-sky-500 text-slate-950 font-bold'
+                    : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
                 }`}
               >
-                {estado}
+                {st}
               </button>
             ))}
           </div>
-        </section>
+        </div>
 
-        {/* Tabla */}
-        <section className="bg-slate-900/80 rounded-xl border border-slate-800 overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-800/50 text-xs uppercase text-slate-400 font-semibold border-b border-slate-800">
-                <tr>
-                  <th className="px-6 py-4">Código</th>
-                  <th className="px-6 py-4">Cliente</th>
-                  <th className="px-6 py-4">Servicio</th>
-                  <th className="px-6 py-4">Técnico Resp.</th>
-                  <th className="px-6 py-4">Presupuesto</th>
-                  <th className="px-6 py-4">Estado</th>
-                  <th className="px-6 py-4 text-right">Acción</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {obrasFiltradas.length > 0 ? (
-                  obrasFiltradas.map((obra) => (
-                    <tr key={obra.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="px-6 py-4 font-mono font-bold text-sky-400">{obra.id}</td>
-                      <td className="px-6 py-4 font-medium text-white">{obra.cliente}</td>
-                      <td className="px-6 py-4 text-slate-300">{obra.servicio}</td>
-                      <td className="px-6 py-4 text-slate-300">{obra.tecnico}</td>
-                      <td className="px-6 py-4 font-medium text-slate-200">
-                        ${obra.presupuesto.toLocaleString('es-CL')}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${getBadgeStyle(obra.estado)}`}>
-                          {obra.estado}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
+        {/* Tabla principal */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs text-slate-300">
+            <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+              <tr>
+                <th className="py-3 px-4">Código</th>
+                <th className="py-3 px-4">Cliente</th>
+                <th className="py-3 px-4">Ubicación</th>
+                <th className="py-3 px-4">Servicio</th>
+                {esFinanzas && <th className="py-3 px-4">Presupuesto</th>}
+                <th className="py-3 px-4">Estado</th>
+                <th className="py-3 px-4 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {obrasFiltradas.map((item) => (
+                <tr key={item.id} className="hover:bg-slate-800/40 transition-colors">
+                  <td className="py-3 px-4 font-mono text-sky-400 font-semibold">{item.id}</td>
+                  <td className="py-3 px-4 font-medium text-white">{item.cliente}</td>
+                  <td className="py-3 px-4 text-slate-300">
+                    <span className="bg-slate-950 border border-slate-800 px-2 py-0.5 rounded text-[11px]">
+                      📍 {item.comuna}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-slate-400">{item.servicio}</td>
+                  {esFinanzas && <td className="py-3 px-4 font-semibold text-slate-200">{formatCLP(item.monto)}</td>}
+                  <td className="py-3 px-4">
+                    <span
+                      className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                        item.estado === 'En proceso'
+                          ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30'
+                          : item.estado === 'Finalizada'
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                      }`}
+                    >
+                      {item.estado}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      {/* Botón Ver Ficha Técnica / Bitácora */}
+                      <button
+                        onClick={() => setObraDetalle(item)}
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[11px] transition-colors cursor-pointer"
+                        title="Ver Ficha Técnica"
+                      >
+                        🔧 Ficha
+                      </button>
+
+                      {/* Botón Generar PDF / Presupuesto (CU-05/CU-06) */}
+                      {esFinanzas && (
                         <button
-                          onClick={() => cambiarEstado(obra.id)}
-                          className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition"
+                          onClick={() => setObraPDF(item)}
+                          className="px-2.5 py-1 bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 rounded text-[11px] transition-colors cursor-pointer"
+                          title="Generar Presupuesto PDF"
                         >
-                          Siguiente Estado
+                          📄 PDF
                         </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="px-6 py-10 text-center text-slate-500 text-sm">
-                      No se encontraron obras coincidentes.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-      </div>
-
-      {/* Modal */}
-      {modalAbierto && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-xs">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-5">
-              <h3 className="text-lg font-bold text-white">Registrar Nueva Obra</h3>
+      {/* MODAL 1: Ficha Técnica de Equipos & Bitácora de Terreno */}
+      {obraDetalle && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-lg shadow-2xl text-slate-100">
+            <div className="flex justify-between items-start mb-4 border-b border-slate-800 pb-3">
+              <div>
+                <span className="text-xs font-mono text-sky-400 font-bold">{obraDetalle.id}</span>
+                <h3 className="text-lg font-bold text-white">{obraDetalle.cliente}</h3>
+                <p className="text-xs text-slate-400">Comuna: {obraDetalle.comuna} — Servicio: {obraDetalle.servicio}</p>
+              </div>
               <button
-                onClick={() => setModalAbierto(false)}
-                className="text-slate-400 hover:text-white text-lg font-bold"
+                onClick={() => setObraDetalle(null)}
+                className="text-slate-400 hover:text-white font-bold text-base"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleCrearObra} className="space-y-4">
+            {/* Ficha de Equipos */}
+            <div className="mb-5">
+              <h4 className="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">⚙️ Equipos de Refrigeración Asociados</h4>
+              <ul className="bg-slate-950 border border-slate-800 rounded-lg p-3 space-y-1.5 text-xs text-slate-300">
+                {obraDetalle.equipos.map((eq, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-sky-400 rounded-full"></span>
+                    {eq}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Bitácora de Observaciones */}
+            <div className="mb-6">
+              <h4 className="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">📋 Bitácora de Observaciones (Terreno)</h4>
+              <div className="bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-300 italic">
+                "{obraDetalle.bitacora}"
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => setObraDetalle(null)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium transition-colors"
+              >
+                Cerrar Ficha
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: Documento Presupuesto PDF (CU-05 / CU-06) */}
+      {obraPDF && (
+        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white text-slate-900 rounded-xl p-8 w-full max-w-2xl shadow-2xl font-sans">
+            {/* Cabecera del Documento PDF */}
+            <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-6">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Nombre del Cliente / Empresa</label>
+                <span className="bg-slate-900 text-white font-bold px-3 py-1 rounded text-xs tracking-wider">
+                  FYAG
+                </span>
+                <h2 className="text-xl font-bold mt-2">FRÍO Y AGROINDUSTRIA SpA</h2>
+                <p className="text-xs text-slate-600">R.U.T: 76.890.123-K — Chillán, Región del Ñuble</p>
+                <p className="text-xs text-slate-600">Servicios de Refrigeración Industrial y Climatización</p>
+              </div>
+              <div className="text-right">
+                <span className="text-xs font-bold text-slate-500 uppercase block">Documento de Presupuesto</span>
+                <span className="text-sm font-mono font-bold text-slate-900">{obraPDF.id}</span>
+                <p className="text-xs text-slate-500 mt-1">Fecha: 16/10/2026</p>
+              </div>
+            </div>
+
+            {/* Datos del Cliente */}
+            <div className="grid grid-cols-2 gap-4 bg-slate-100 p-4 rounded-lg mb-6 text-xs">
+              <div>
+                <p className="text-slate-500 font-bold uppercase">Cliente:</p>
+                <p className="font-bold text-sm text-slate-900">{obraPDF.cliente}</p>
+                <p className="text-slate-600">Comuna: {obraPDF.comuna}, Chile</p>
+              </div>
+              <div>
+                <p className="text-slate-500 font-bold uppercase">Tipo de Servicio:</p>
+                <p className="font-bold text-slate-900">{obraPDF.servicio}</p>
+                <p className="text-slate-600">Estado: {obraPDF.estado}</p>
+              </div>
+            </div>
+
+            {/* Detalle del Servicio */}
+            <table className="w-full text-left text-xs mb-6 border-collapse">
+              <thead>
+                <tr className="border-b-2 border-slate-300 text-slate-600 uppercase text-[10px]">
+                  <th className="py-2">Descripción del Requerimiento</th>
+                  <th className="py-2 text-right">Monto Neto</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                <tr>
+                  <td className="py-3">
+                    <p className="font-bold">{obraPDF.servicio} Agroindustrial</p>
+                    <p className="text-[11px] text-slate-500">Incluye mano de obra especializada e insumos técnicos.</p>
+                  </td>
+                  <td className="py-3 text-right font-bold font-mono">{formatCLP(obraPDF.monto)}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* Totalizador */}
+            <div className="flex justify-end border-t-2 border-slate-900 pt-4 mb-8">
+              <div className="text-right text-xs space-y-1">
+                <p className="text-slate-600">Subtotal: <span className="font-mono">{formatCLP(obraPDF.monto)}</span></p>
+                <p className="text-slate-600">IVA (19%): <span className="font-mono">{formatCLP(Math.round(obraPDF.monto * 0.19))}</span></p>
+                <p className="text-base font-bold text-slate-900 pt-2 border-t border-slate-300">
+                  Total CLP: <span className="font-mono text-sky-700">{formatCLP(Math.round(obraPDF.monto * 1.19))}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Botones de Acción PDF */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+              <button
+                onClick={() => setObraPDF(null)}
+                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+              >
+                Cerrar
+              </button>
+
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2 bg-slate-900 hover:bg-black text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-md"
+              >
+                🖨️ Imprimir / Guardar PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: + Nueva Obra */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h2 className="text-lg font-bold text-white mb-1">Registrar Nueva Obra</h2>
+            <p className="text-xs text-slate-400 mb-5">Ingresa los detalles técnicos para iniciar el proyecto.</p>
+
+            <form onSubmit={handleGuardarObra} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">Nombre del Cliente</label>
                 <input
                   type="text"
                   required
-                  placeholder="Ej. Viña Concha y Toro"
-                  value={formulario.cliente}
-                  onChange={(e) => setFormulario({ ...formulario, cliente: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                  placeholder="Ej. Avícola Chillán"
+                  value={nuevaObra.cliente}
+                  onChange={(e) => setNuevaObra({ ...nuevaObra, cliente: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Tipo de Servicio</label>
-                <select
-                  value={formulario.servicio}
-                  onChange={(e) => setFormulario({ ...formulario, servicio: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                >
-                  {serviciosFYAG.map((serv) => (
-                    <option key={serv} value={serv}>{serv}</option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">Comuna (Ñuble)</label>
+                  <select
+                    value={nuevaObra.comuna}
+                    onChange={(e) => setNuevaObra({ ...nuevaObra, comuna: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-sky-500"
+                  >
+                    <option>Chillán</option>
+                    <option>San Carlos</option>
+                    <option>Coihueco</option>
+                    <option>Bulnes</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">Tipo Servicio</label>
+                  <select
+                    value={nuevaObra.servicio}
+                    onChange={(e) => setNuevaObra({ ...nuevaObra, servicio: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-sky-500"
+                  >
+                    <option>Climatización</option>
+                    <option>Mantención</option>
+                    <option>Emergencia</option>
+                    <option>Proyecto Eléctrico</option>
+                  </select>
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Técnico Responsable</label>
-                <input
-                  type="text"
-                  placeholder="Ej. Carlos Muñoz (opcional)"
-                  value={formulario.tecnico}
-                  onChange={(e) => setFormulario({ ...formulario, tecnico: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Presupuesto ($ CLP)</label>
+                <label className="block text-slate-300 font-medium mb-1">Presupuesto ($ CLP)</label>
                 <input
                   type="number"
                   required
-                  min="0"
-                  placeholder="Ej. 1200000"
-                  value={formulario.presupuesto}
-                  onChange={(e) => setFormulario({ ...formulario, presupuesto: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                  placeholder="Ej. 2500000"
+                  value={nuevaObra.monto}
+                  onChange={(e) => setNuevaObra({ ...nuevaObra, monto: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800 mt-6">
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">Equipos (separados por coma)</label>
+                <input
+                  type="text"
+                  placeholder="Ej. Cámara #1, Compresor 20HP"
+                  value={nuevaObra.equipos}
+                  onChange={(e) => setNuevaObra({ ...nuevaObra, equipos: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">Observación Inicial</label>
+                <textarea
+                  placeholder="Notas de terreno..."
+                  rows="2"
+                  value={nuevaObra.bitacora}
+                  onChange={(e) => setNuevaObra({ ...nuevaObra, bitacora: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500"
+                ></textarea>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-6">
                 <button
                   type="button"
-                  onClick={() => setModalAbierto(false)}
-                  className="px-4 py-2 text-sm text-slate-400 hover:text-white"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-slate-400 rounded-lg text-xs font-medium transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow"
+                  className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold rounded-lg text-xs transition-colors cursor-pointer"
                 >
                   Guardar Obra
                 </button>
@@ -405,5 +581,5 @@ export default function App() {
         </div>
       )}
     </div>
-  )
+  );
 }

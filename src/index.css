@@ -1,1 +1,6 @@
 @import "tailwindcss";
+/* Filtro Wireframe en Blanco y Negro */
+body {
+  filter: grayscale(100%) contrast(125%);
+  background-color: #ffffff !important;
+}
