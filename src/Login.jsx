@@ -48,16 +48,18 @@ export default function Login({ onLogin }) {
 
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              Rol de Acceso
+              Rol de Acceso (5 Roles FYAG)
             </label>
             <select
               value={rol}
               onChange={(e) => setRol(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-sky-500 transition-colors"
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-sky-500 transition-colors cursor-pointer"
             >
               <option value="Supervisor de Terreno">Supervisor de Terreno</option>
+              <option value="Técnico de Mantenimiento">Técnico de Mantenimiento</option>
               <option value="Finanzas / Administración">Finanzas / Administración</option>
               <option value="Gerencia General">Gerencia General</option>
+              <option value="Administrador del Sistema">Administrador del Sistema</option>
             </select>
           </div>
 

@@ -69,6 +69,12 @@ export default function App() {
     bitacora: ''
   });
 
+  // Permisos por Rol (Dentro de App para acceder a userRole)
+  const esAdmin = userRole === 'Administrador del Sistema';
+  const esGerencia = userRole === 'Gerencia General' || esAdmin;
+  const esFinanzas = userRole === 'Finanzas / Administración' || esGerencia;
+  const esTerreno = userRole === 'Supervisor de Terreno' || userRole === 'Técnico de Mantenimiento' || esGerencia;
+
   if (!isLoggedIn) {
     return (
       <Login
@@ -79,11 +85,6 @@ export default function App() {
       />
     );
   }
-
-  // Permisos por Rol
-  const esGerencia = userRole === 'Gerencia General';
-  const esFinanzas = userRole === 'Finanzas / Administración' || esGerencia;
-  const esTerreno = userRole === 'Supervisor de Terreno' || esGerencia;
 
   // KPIs
   const enTerrenoCount = obras.filter((o) => o.estado === 'En proceso').length;
@@ -241,7 +242,6 @@ export default function App() {
               className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 w-full sm:w-60"
             />
 
-            {/* Filtro por Comuna (Región de Ñuble) */}
             <select
               value={filterComuna}
               onChange={(e) => setFilterComuna(e.target.value)}
@@ -313,7 +313,6 @@ export default function App() {
                   </td>
                   <td className="py-3 px-4 text-center">
                     <div className="flex items-center justify-center gap-2">
-                      {/* Botón Ver Ficha Técnica / Bitácora */}
                       <button
                         onClick={() => setObraDetalle(item)}
                         className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[11px] transition-colors cursor-pointer"
@@ -322,7 +321,6 @@ export default function App() {
                         🔧 Ficha
                       </button>
 
-                      {/* Botón Generar PDF / Presupuesto (CU-05/CU-06) */}
                       {esFinanzas && (
                         <button
                           onClick={() => setObraPDF(item)}
@@ -359,7 +357,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Ficha de Equipos */}
             <div className="mb-5">
               <h4 className="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">⚙️ Equipos de Refrigeración Asociados</h4>
               <ul className="bg-slate-950 border border-slate-800 rounded-lg p-3 space-y-1.5 text-xs text-slate-300">
@@ -372,7 +369,6 @@ export default function App() {
               </ul>
             </div>
 
-            {/* Bitácora de Observaciones */}
             <div className="mb-6">
               <h4 className="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">📋 Bitácora de Observaciones (Terreno)</h4>
               <div className="bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-300 italic">
@@ -392,11 +388,10 @@ export default function App() {
         </div>
       )}
 
-      {/* MODAL 2: Documento Presupuesto PDF (CU-05 / CU-06) */}
+      {/* MODAL 2: Documento Presupuesto PDF */}
       {obraPDF && (
         <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white text-slate-900 rounded-xl p-8 w-full max-w-2xl shadow-2xl font-sans">
-            {/* Cabecera del Documento PDF */}
             <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-6">
               <div>
                 <span className="bg-slate-900 text-white font-bold px-3 py-1 rounded text-xs tracking-wider">
@@ -413,7 +408,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Datos del Cliente */}
             <div className="grid grid-cols-2 gap-4 bg-slate-100 p-4 rounded-lg mb-6 text-xs">
               <div>
                 <p className="text-slate-500 font-bold uppercase">Cliente:</p>
@@ -427,7 +421,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Detalle del Servicio */}
             <table className="w-full text-left text-xs mb-6 border-collapse">
               <thead>
                 <tr className="border-b-2 border-slate-300 text-slate-600 uppercase text-[10px]">
@@ -446,7 +439,6 @@ export default function App() {
               </tbody>
             </table>
 
-            {/* Totalizador */}
             <div className="flex justify-end border-t-2 border-slate-900 pt-4 mb-8">
               <div className="text-right text-xs space-y-1">
                 <p className="text-slate-600">Subtotal: <span className="font-mono">{formatCLP(obraPDF.monto)}</span></p>
@@ -457,7 +449,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Botones de Acción PDF */}
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
               <button
                 onClick={() => setObraPDF(null)}
