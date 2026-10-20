@@ -10,11 +10,11 @@ export default function App() {
   const [filterComuna, setFilterComuna] = useState('Todas');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Modales de Detalle Técnico y Visor PDF
+  // Modales
   const [obraDetalle, setObraDetalle] = useState(null);
   const [obraPDF, setObraPDF] = useState(null);
 
-  // Lista de Obras con Comuna, Equipos y Bitácora
+  // Lista de Obras
   const [obras, setObras] = useState([
     {
       id: 'OBR-2026-01',
@@ -69,7 +69,7 @@ export default function App() {
     bitacora: ''
   });
 
-  // Permisos por Rol (Dentro de App para acceder a userRole)
+  // Permisos por Rol
   const esAdmin = userRole === 'Administrador del Sistema';
   const esGerencia = userRole === 'Gerencia General' || esAdmin;
   const esFinanzas = userRole === 'Finanzas / Administración' || esGerencia;
@@ -131,17 +131,17 @@ export default function App() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 font-sans">
+    <div className="min-h-screen bg-slate-800 text-slate-100 p-6 font-sans">
       {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-slate-800">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-slate-600">
         <div className="flex items-center gap-3">
-          <span className="bg-sky-500 text-slate-950 font-bold px-2.5 py-1 rounded text-sm tracking-wider">
+          <span className="bg-sky-400 text-slate-950 font-bold px-2.5 py-1 rounded text-sm tracking-wider">
             FYAG
           </span>
           <div>
             <h1 className="text-xl font-bold text-white tracking-tight">Frío y Agroindustria SpA</h1>
-            <p className="text-xs text-slate-400">
-              Gestión de Obras y Presupuestos — Rol: <strong className="text-sky-400">{userRole}</strong>
+            <p className="text-xs text-slate-300">
+              Gestión de Obras y Presupuestos — Rol: <strong className="text-sky-300">{userRole}</strong>
             </p>
           </div>
         </div>
@@ -150,17 +150,17 @@ export default function App() {
           {esTerreno && (
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-lg shadow-sky-500/20 cursor-pointer"
+              className="bg-sky-400 hover:bg-sky-300 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-md cursor-pointer"
             >
               <span className="text-base font-bold">+</span> Nueva Obra
             </button>
           )}
 
-          <div className="h-6 w-px bg-slate-800"></div>
+          <div className="h-6 w-px bg-slate-600"></div>
 
           <button
             onClick={() => setIsLoggedIn(false)}
-            className="px-3 py-1.5 bg-slate-900 hover:bg-red-950/50 hover:text-red-400 text-slate-400 border border-slate-800 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+            className="px-3 py-1.5 bg-slate-700 hover:bg-red-900/50 hover:text-red-200 text-slate-200 border border-slate-600 rounded-lg text-xs font-medium transition-colors cursor-pointer"
           >
             Cerrar Sesión
           </button>
@@ -169,69 +169,69 @@ export default function App() {
 
       {/* Tarjetas KPI */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Obras en Terreno</span>
+        <div className="bg-slate-700 border border-slate-600 rounded-xl p-5 shadow-md">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">Obras en Terreno</span>
           <p className="text-3xl font-extrabold text-white mt-2">{enTerrenoCount}</p>
-          <span className="text-xs text-sky-400 mt-2 block">Activas en plantas</span>
+          <span className="text-xs text-sky-300 mt-2 block font-medium">Activas en plantas</span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Obras Finalizadas</span>
+        <div className="bg-slate-700 border border-slate-600 rounded-xl p-5 shadow-md">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">Obras Finalizadas</span>
           <p className="text-3xl font-extrabold text-white mt-2">{finalizadasCount}</p>
-          <span className="text-xs text-emerald-400 mt-2 block">Listas para facturar</span>
+          <span className="text-xs text-emerald-300 mt-2 block font-medium">Listas para facturar</span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Suspendidas / Alerta</span>
-          <p className="text-3xl font-extrabold text-amber-400 mt-2">{suspendidasCount}</p>
-          <span className="text-xs text-amber-400/80 mt-2 block">Revisar observaciones</span>
+        <div className="bg-slate-700 border border-slate-600 rounded-xl p-5 shadow-md">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">Suspendidas / Alerta</span>
+          <p className="text-3xl font-extrabold text-amber-300 mt-2">{suspendidasCount}</p>
+          <span className="text-xs text-amber-200 mt-2 block font-medium">Revisar observaciones</span>
         </div>
 
         {esFinanzas ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Monto Total Cartera</span>
+          <div className="bg-slate-700 border border-slate-600 rounded-xl p-5 shadow-md">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">Monto Total Cartera</span>
             <p className="text-3xl font-extrabold text-white mt-2">{formatCLP(totalMonto)}</p>
-            <span className="text-xs text-slate-400 mt-2 block">Proyectos registrados</span>
+            <span className="text-xs text-slate-300 mt-2 block">Proyectos registrados</span>
           </div>
         ) : (
-          <div className="bg-slate-900 border border-slate-800/50 rounded-xl p-5 opacity-60">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Monto Total Cartera</span>
-            <p className="text-sm font-medium text-slate-500 mt-3">[ Restringido a Finanzas ]</p>
+          <div className="bg-slate-700/60 border border-slate-600/50 rounded-xl p-5 opacity-70">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">Monto Total Cartera</span>
+            <p className="text-sm font-medium text-slate-400 mt-3">[ Restringido a Finanzas ]</p>
           </div>
         )}
       </section>
 
       {/* Gráfico Financiero */}
       {esFinanzas && (
-        <section className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-8">
+        <section className="bg-slate-700 border border-slate-600 rounded-xl p-6 mb-8 shadow-md">
           <div className="mb-4">
             <h2 className="text-base font-bold text-white">Presupuesto Acumulado por Tipo de Servicio</h2>
-            <p className="text-xs text-slate-400">Distribución de capital comprometido según categoría</p>
+            <p className="text-xs text-slate-300">Distribución de capital comprometido según categoría</p>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis dataKey="servicio" stroke="#64748b" fontSize={12} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                <XAxis dataKey="servicio" stroke="#cbd5e1" fontSize={12} tickLine={false} />
                 <YAxis
-                  stroke="#64748b"
+                  stroke="#cbd5e1"
                   fontSize={12}
                   tickLine={false}
                   tickFormatter={(val) => `$${(val / 1000000).toFixed(1)}M`}
                 />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#fff' }}
+                  contentStyle={{ backgroundColor: '#1e293b', borderColor: '#475569', borderRadius: '8px', color: '#fff' }}
                   formatter={(val) => [formatCLP(val), 'Presupuesto']}
                 />
-                <Bar dataKey="monto" fill="#0284c7" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="monto" fill="#38bdf8" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </section>
       )}
 
-      {/* Tabla con Filtro por Ubicación/Comuna */}
-      <section className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+      {/* Tabla con Filtros */}
+      <section className="bg-slate-700 border border-slate-600 rounded-xl p-6 shadow-md">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
             <input
@@ -239,13 +239,13 @@ export default function App() {
               placeholder="Buscar cliente o código..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 w-full sm:w-60"
+              className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-sky-400 w-full sm:w-60"
             />
 
             <select
               value={filterComuna}
               onChange={(e) => setFilterComuna(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-sky-500"
+              className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-400"
             >
               <option value="Todas">Todas las Comunas (Ñuble)</option>
               <option value="Chillán">Chillán</option>
@@ -262,8 +262,8 @@ export default function App() {
                 onClick={() => setFilterStatus(st)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
                   filterStatus === st
-                    ? 'bg-sky-500 text-slate-950 font-bold'
-                    : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                    ? 'bg-sky-400 text-slate-950 font-bold'
+                    : 'bg-slate-800 text-slate-200 hover:text-white border border-slate-600'
                 }`}
               >
                 {st}
@@ -274,8 +274,8 @@ export default function App() {
 
         {/* Tabla principal */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+          <table className="w-full text-left text-xs text-slate-200">
+            <thead className="bg-slate-800 text-slate-300 uppercase text-[10px] tracking-wider border-b border-slate-600">
               <tr>
                 <th className="py-3 px-4">Código</th>
                 <th className="py-3 px-4">Cliente</th>
@@ -286,26 +286,26 @@ export default function App() {
                 <th className="py-3 px-4 text-center">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-slate-600/60">
               {obrasFiltradas.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-800/40 transition-colors">
-                  <td className="py-3 px-4 font-mono text-sky-400 font-semibold">{item.id}</td>
+                <tr key={item.id} className="hover:bg-slate-600/40 transition-colors">
+                  <td className="py-3 px-4 font-mono text-sky-300 font-semibold">{item.id}</td>
                   <td className="py-3 px-4 font-medium text-white">{item.cliente}</td>
-                  <td className="py-3 px-4 text-slate-300">
-                    <span className="bg-slate-950 border border-slate-800 px-2 py-0.5 rounded text-[11px]">
+                  <td className="py-3 px-4 text-slate-200">
+                    <span className="bg-slate-800 border border-slate-600 px-2 py-0.5 rounded text-[11px]">
                       📍 {item.comuna}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-slate-400">{item.servicio}</td>
-                  {esFinanzas && <td className="py-3 px-4 font-semibold text-slate-200">{formatCLP(item.monto)}</td>}
+                  <td className="py-3 px-4 text-slate-200">{item.servicio}</td>
+                  {esFinanzas && <td className="py-3 px-4 font-semibold text-slate-100">{formatCLP(item.monto)}</td>}
                   <td className="py-3 px-4">
                     <span
                       className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold ${
                         item.estado === 'En proceso'
-                          ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30'
+                          ? 'bg-sky-500/20 text-sky-300 border border-sky-400/50'
                           : item.estado === 'Finalizada'
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/50'
+                          : 'bg-amber-500/20 text-amber-300 border border-amber-400/50'
                       }`}
                     >
                       {item.estado}
@@ -315,7 +315,7 @@ export default function App() {
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => setObraDetalle(item)}
-                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[11px] transition-colors cursor-pointer"
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-600 text-slate-100 rounded text-[11px] transition-colors cursor-pointer border border-slate-600"
                         title="Ver Ficha Técnica"
                       >
                         🔧 Ficha
@@ -324,7 +324,7 @@ export default function App() {
                       {esFinanzas && (
                         <button
                           onClick={() => setObraPDF(item)}
-                          className="px-2.5 py-1 bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 rounded text-[11px] transition-colors cursor-pointer"
+                          className="px-2.5 py-1 bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/50 rounded text-[11px] transition-colors cursor-pointer"
                           title="Generar Presupuesto PDF"
                         >
                           📄 PDF
@@ -339,27 +339,27 @@ export default function App() {
         </div>
       </section>
 
-      {/* MODAL 1: Ficha Técnica de Equipos & Bitácora de Terreno */}
+      {/* MODAL 1: Ficha Técnica */}
       {obraDetalle && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-lg shadow-2xl text-slate-100">
-            <div className="flex justify-between items-start mb-4 border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-700 border border-slate-600 rounded-xl p-6 w-full max-w-lg shadow-2xl text-slate-100">
+            <div className="flex justify-between items-start mb-4 border-b border-slate-600 pb-3">
               <div>
-                <span className="text-xs font-mono text-sky-400 font-bold">{obraDetalle.id}</span>
+                <span className="text-xs font-mono text-sky-300 font-bold">{obraDetalle.id}</span>
                 <h3 className="text-lg font-bold text-white">{obraDetalle.cliente}</h3>
-                <p className="text-xs text-slate-400">Comuna: {obraDetalle.comuna} — Servicio: {obraDetalle.servicio}</p>
+                <p className="text-xs text-slate-300">Comuna: {obraDetalle.comuna} — Servicio: {obraDetalle.servicio}</p>
               </div>
               <button
                 onClick={() => setObraDetalle(null)}
-                className="text-slate-400 hover:text-white font-bold text-base"
+                className="text-slate-300 hover:text-white font-bold text-base"
               >
                 ✕
               </button>
             </div>
 
             <div className="mb-5">
-              <h4 className="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">⚙️ Equipos de Refrigeración Asociados</h4>
-              <ul className="bg-slate-950 border border-slate-800 rounded-lg p-3 space-y-1.5 text-xs text-slate-300">
+              <h4 className="text-xs font-bold text-sky-300 uppercase tracking-wider mb-2">⚙️ Equipos de Refrigeración Asociados</h4>
+              <ul className="bg-slate-800 border border-slate-600 rounded-lg p-3 space-y-1.5 text-xs text-slate-200">
                 {obraDetalle.equipos.map((eq, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 bg-sky-400 rounded-full"></span>
@@ -370,8 +370,8 @@ export default function App() {
             </div>
 
             <div className="mb-6">
-              <h4 className="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">📋 Bitácora de Observaciones (Terreno)</h4>
-              <div className="bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-300 italic">
+              <h4 className="text-xs font-bold text-sky-300 uppercase tracking-wider mb-2">📋 Bitácora de Observaciones (Terreno)</h4>
+              <div className="bg-slate-800 border border-slate-600 rounded-lg p-3 text-xs text-slate-200 italic">
                 "{obraDetalle.bitacora}"
               </div>
             </div>
@@ -379,7 +379,7 @@ export default function App() {
             <div className="flex justify-end">
               <button
                 onClick={() => setObraDetalle(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium transition-colors"
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-600 text-white rounded-lg text-xs font-medium transition-colors border border-slate-600"
               >
                 Cerrar Ficha
               </button>
@@ -390,7 +390,7 @@ export default function App() {
 
       {/* MODAL 2: Documento Presupuesto PDF */}
       {obraPDF && (
-        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white text-slate-900 rounded-xl p-8 w-full max-w-2xl shadow-2xl font-sans">
             <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-6">
               <div>
@@ -470,31 +470,31 @@ export default function App() {
 
       {/* MODAL 3: + Nueva Obra */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-700 border border-slate-600 rounded-xl p-6 w-full max-w-md shadow-2xl">
             <h2 className="text-lg font-bold text-white mb-1">Registrar Nueva Obra</h2>
-            <p className="text-xs text-slate-400 mb-5">Ingresa los detalles técnicos para iniciar el proyecto.</p>
+            <p className="text-xs text-slate-300 mb-5">Ingresa los detalles técnicos para iniciar el proyecto.</p>
 
             <form onSubmit={handleGuardarObra} className="space-y-4 text-xs">
               <div>
-                <label className="block text-slate-300 font-medium mb-1">Nombre del Cliente</label>
+                <label className="block text-slate-200 font-medium mb-1">Nombre del Cliente</label>
                 <input
                   type="text"
                   required
                   placeholder="Ej. Avícola Chillán"
                   value={nuevaObra.cliente}
                   onChange={(e) => setNuevaObra({ ...nuevaObra, cliente: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500"
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-400"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-medium mb-1">Comuna (Ñuble)</label>
+                  <label className="block text-slate-200 font-medium mb-1">Comuna (Ñuble)</label>
                   <select
                     value={nuevaObra.comuna}
                     onChange={(e) => setNuevaObra({ ...nuevaObra, comuna: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-sky-500"
+                    className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-sky-400"
                   >
                     <option>Chillán</option>
                     <option>San Carlos</option>
@@ -504,11 +504,11 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-medium mb-1">Tipo Servicio</label>
+                  <label className="block text-slate-200 font-medium mb-1">Tipo Servicio</label>
                   <select
                     value={nuevaObra.servicio}
                     onChange={(e) => setNuevaObra({ ...nuevaObra, servicio: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-sky-500"
+                    className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-sky-400"
                   >
                     <option>Climatización</option>
                     <option>Mantención</option>
@@ -519,50 +519,50 @@ export default function App() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-medium mb-1">Presupuesto ($ CLP)</label>
+                <label className="block text-slate-200 font-medium mb-1">Presupuesto ($ CLP)</label>
                 <input
                   type="number"
                   required
                   placeholder="Ej. 2500000"
                   value={nuevaObra.monto}
                   onChange={(e) => setNuevaObra({ ...nuevaObra, monto: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500"
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-400"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-medium mb-1">Equipos (separados por coma)</label>
+                <label className="block text-slate-200 font-medium mb-1">Equipos (separados por coma)</label>
                 <input
                   type="text"
                   placeholder="Ej. Cámara #1, Compresor 20HP"
                   value={nuevaObra.equipos}
                   onChange={(e) => setNuevaObra({ ...nuevaObra, equipos: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500"
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-400"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-medium mb-1">Observación Inicial</label>
+                <label className="block text-slate-200 font-medium mb-1">Observación Inicial</label>
                 <textarea
                   placeholder="Notas de terreno..."
                   rows="2"
                   value={nuevaObra.bitacora}
                   onChange={(e) => setNuevaObra({ ...nuevaObra, bitacora: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500"
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-400"
                 ></textarea>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-6">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-600 mt-6">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-slate-400 rounded-lg text-xs font-medium transition-colors"
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-medium transition-colors border border-slate-600"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold rounded-lg text-xs transition-colors cursor-pointer"
+                  className="px-4 py-2 bg-sky-400 hover:bg-sky-300 text-slate-950 font-bold rounded-lg text-xs transition-colors cursor-pointer"
                 >
                   Guardar Obra
                 </button>
